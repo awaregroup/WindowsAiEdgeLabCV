@@ -108,7 +108,7 @@ The name of your device is written on the underside of the case in white.
 Right click on your device and select "Copy IPv4 Address".
 
 ```
-PS C:\WindowsAiEdgeLabCV> $DeviceIPAddress = "192.168.1.102"
+PS C:\WindowsAiEdgeLabCV> $DeviceIPAddress = {ENTER YOUR IP ADDRESS HERE}
 PS C:\WindowsAiEdgeLabCV> net use q: \\$DeviceIPAddress\c$ p@ssw0rd /USER:Administrator
 The command completed successfully.
 ```
