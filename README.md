@@ -4,7 +4,7 @@ For this lab, we will use [Azure Cognitive Services](https://azure.microsoft.com
 
 We will download the ONNX model from Custom Vision, add some .NET components and deploy the model in a docker container to a device running [Azure IoT Edge](https://azure.microsoft.com/en-us/services/iot-edge/) on [Windows 10 IoT Core](https://www.microsoft.com/en-us/windowsforbusiness/windows-iot).
 
-Images will be captured from a camera on our edge device with inferencing happening at the edge using [Windows ML](https://docs.microsoft.com/en-us/windows/ai/windows-ml/) and sending our results through [Azure IoT Hubs](https://azure.microsoft.com/en-us/services/iot-hub/). Finally, we will visualize the results using [Azure Time Series Insights](https://azure.microsoft.com/en-us/services/time-series-insights/).
+Images will be captured from a camera on our edge device with inferencing happening at the edge using [Windows ML](https://docs.microsoft.com/en-us/windows/ai/windows-ml/) and sending our results through [Azure IoT Hub](https://azure.microsoft.com/en-us/services/iot-hub/). Finally, we will visualize the results using [Azure Time Series Insights](https://azure.microsoft.com/en-us/services/time-series-insights/).
 
 ![Architecture Diagram](./assets/winmliot.png)
 
@@ -19,14 +19,14 @@ Before starting this lab, make sure you have the following open:
 
 **NOTE: You can find all username and password details in the __credentials.txt__ file in the Desktop > WindowsIoT folder.**
 
-# Step 1:  Train the Model
-## 1.1:  Gathering Training data
+# Step 1 - Train the Model
+## 1.1 - Gathering Training data
 1. Plug the USB camera into your lab PC
 1. Open the Windows Camera app from the Start Menu
 1. Take between 10-15 photos of each object you'd like to recognize with your model. **NOTE: More photos with different rotations and focal length should theoretically make for a better model!**
 1. Confirm your photos are in the ```Pictures > Camera Roll``` folder
 
-## 1.2:  Creating a Custom Vision Service Project
+## 1.2 - Creating a Custom Vision Service Project
 1. Log into the [Custom Vision Service portal](https://www.customvision.ai/) using the provided Azure credentials (found in the credentials.txt file - see above)
 1. Click 'New Project'
 1. Enter the following values and click 'Create Project'
@@ -38,73 +38,60 @@ Before starting this lab, make sure you have the following open:
 |Classification Types |Multiclass           |
 |Domains              |General **(compact)**|
 
-## 1.3:  Importing Images into Custom Vision Service
+## 1.3 - Importing Images into Custom Vision Service
 1. Click the 'Add Images' button and browse to the ```Pictures > Camera Roll``` directory
-1. Select the 10-15 images of each a single type
+1. Select the 10-15 image set for each a object type
 1. Enter a tag name - this is what your model will predict when it sees this object
-1. Repeat this until each set of images is loaded into Custom Vision
+1. Repeat this until each set of images is uploaded into Custom Vision
 
-## 1.4:  Train and test your model
+## 1.4 - Train and test your model
 1. Click the green 'Train' button in the top right corner. After your model has trained, you can see the rated performance
 1. Click 'Quick Test' next to the 'Train' button and upload an extra image of your item that **was not** included in the original 10-15 images
 
-## 1.5:  Export ONNX model
+## 1.5 - Export ONNX model
 1. Return to the Performance tab
 1. Click the 'Export' to start the download process
 1. Select ONNX as the model format and ONNX 1.2 as the format version
 1. Click 'Download' and rename to CustomVision.onnx in the ```Downloads``` folder
 
 
-# Step 2: Package the model into a C# .NET Application
+# Step 2 - Package the model into a C# .NET Application
 
-## Get the code
+## 2.1 - Find the code
 
-If you are running this lab in an environment where this has already been set up, the initial sample will already be present in the directory C:\WindowsAiEdgeLabCV. Otherwise, clone the code as follows:
-
-1. Open a Windows Powershell Prompt.
-1. Change to a directory you'll use for the lab code. For example, C:\
-1. Clone the lab repo https://github.com/awaregroup/WindowsAiEdgeLabCV/
-
-```
-PS C:\> git clone https://github.com/awaregroup/WindowsAiEdgeLabCV/
-Cloning into 'WindowsAiEdgeLabCV'...
-remote: Azure Repos
-remote: Found 78 objects to send. (51 ms)
-Unpacking objects: 100% (78/78), done.
-PS C:\> cd .\WindowsAiEdgeLabCV\
+1. Open a Windows PowerShell Prompt **as Administrator**
+1. Type the following to prepare your environment:
+```powershell
+cd c:\Users\Admin\Desktop\WindowsIoT\WindowsAiEdgeLabCV
+git clean -xdf
+git reset --hard
+git pull
 ```
 
-## Get your model file
+## 2.2 - Prepare your model file
+1. Copy your CustomVision.onnx to ```c:\Users\Admin\Desktop\WindowsIoT\WindowsAiEdgeLabCV``` either through Explorer, or with the following command: 
 
-Copy the CustomVision.onnx model file from your downloads directory where you exported it into the lab directory.
-
-## Build & Test the sample
-
-```
-PS C:\WindowsAiEdgeLabCV> dotnet restore -r win-x64
-PS C:\WindowsAiEdgeLabCV> dotnet publish -r win-x64
-Microsoft (R) Build Engine version 16.0.225-preview+g5ebeba52a1 for .NET Core
-Copyright (C) Microsoft Corporation. All rights reserved.
-
-  Restore completed in 43.29 ms for C:\WindowsAiEdgeLabCV\WindowsAiEdgeLabCV.csproj.
-  WindowsAiEdgeLabCV -> C:\WindowsAiEdgeLabCV\bin\Debug\netcoreapp2.2\WindowsAiEdgeLabCV.dll
-  WindowsAiEdgeLabCV -> C:\WindowsAiEdgeLabCV\bin\Debug\netcoreapp2.2\publish\
+```powershell
+copy c:\Users\Admin\Downloads\CustomVision.onnx .\
 ```
 
-Point the camera at one of your objects, still connected to your development PC.
+## 2.3 - Build and test the code
+1. Run the following code:
 
-Run the sample locally to classify the object. This will test that the app is running correctly locally. We specify "Lifecam" for this model of camera. Here we can see that a "Mug" has been recognized.
-
+```powershell
+dotnet restore -r win-x64
+dotnet publish -r win-x64
 ```
-PS C:\WindowsAiEdgeLabCV> dotnet run --model=CustomVision.onnx --device=LifeCam
-4/24/2019 4:09:04 PM: Loading modelfile 'CustomVision.onnx' on the CPU...
-4/24/2019 4:09:04 PM: ...OK 594 ticks
-4/24/2019 4:09:05 PM: Running the model...
-4/24/2019 4:09:05 PM: ...OK 47 ticks
-4/24/2019 4:09:05 PM: Recognized {"results":[{"label":"Mug","confidence":1.0}],"metrics":{"evaltimeinms":47,"cycletimeinms":0}}
+2. Point the camera at one of your objects and test by running the following:
+
+```powershell
+dotnet run --model=CustomVision.onnx --device=LifeCam
 ```
 
-# Step 3: Build and push a container
+If the model is successful, you will see a prediction label show in the console.
+
+
+# Step 3 - Build and push a container
 
 ## Connect to our IoT Core device
 
