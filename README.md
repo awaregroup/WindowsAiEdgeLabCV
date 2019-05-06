@@ -119,7 +119,7 @@ net use q: \\$ip\c$ "p@ssw0rd" /USER:Administrator
 We will copy the 'publish' folder over to our device
 
 ```powershell
-cd "C:\Users\Admin\Desktop\WindowsIoT\WindowsAiEdgeCV"
+cd "C:\Users\Admin\Desktop\WindowsIoT\WindowsAiEdgeLabCV"
 robocopy .\bin\Debug\netcoreapp2.2\win-x64\publish\ q:\data\modules\customvision
 ```
 
