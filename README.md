@@ -1,47 +1,59 @@
 # Hands-On-Lab: Azure IoT Edge + AI on Windows IoT
 
-For this lab, we will use the Azure Custom Vision service to train a machine learning model for image classification. We will use that model to create a .NET application to pull frames from a connected USB camera, use Windows ML to classify the image, then send the result to Azure IoT Hub. We will deploy that application to a Windows IoT Core device using Azure IoT Edge. Finally, we will visualize the results using Time Series Insights.
+For this lab, we will use [Azure Cognitive Services](https://azure.microsoft.com/en-us/services/cognitive-services/) - [Custom Vision](https://customvision.ai) to train a machine learning model for image classification. 
 
-## Ready to go
+We will download the ONNX model from Custom Vision, add some .NET components and deploy the model in a docker container to a device running [Azure IoT Edge](https://azure.microsoft.com/en-us/services/iot-edge/) on [Windows 10 IoT Core](https://www.microsoft.com/en-us/windowsforbusiness/windows-iot).
 
-When starting the lab, you should have these things open on your development machine:
+Images will be captured from a camera on our edge device with inferencing happening at the edge using [Windows ML](https://docs.microsoft.com/en-us/windows/ai/windows-ml/) and sending our results through [Azure IoT Hubs](https://azure.microsoft.com/en-us/services/iot-hub/). Finally, we will visualize the results using [Azure Time Series Insights](https://azure.microsoft.com/en-us/services/time-series-insights/).
 
-1. These instructions
-1. VS Code open
-1. [Custom Vision Portal](https://www.customvision.ai/) open in a browser tab, and logged in with your Azure Subscription. Select the Directory associated with your Azure custom vision resource. 
-1. [Time Series Insights explorer](https://insights.timeseries.azure.com/) in another browser tab, also logged in
-1. The following service and device information:
+![Architecture Diagram](./assets/winmliot.png)
 
-Item | Value
---- | ---
-Azure Subscription Username	| 
-Azure Subscription Password	| 
-Container Registry Login Server	|
-Container Registry Username	|
-Container Registry Password	|
-IoT Hub Name	|
-IoT Hub Owner Connection String |
-IoT Edge Device Name |	
-IoT Edge Device Connection String |
-Device Name |
-Device IP Address |
-Device Administrator Password |
+## Pre-requisites
 
-# Step 1: Train the Model
+Before starting this lab, make sure you have the following open:
 
-1. Plug the USB camera into your development PC.
-1. Using the Camera app on your development PC, take at least 5 pictures each of your objects. Store these pictures on your computer. Organize all the photos for each object into a folder named for this object. It will make them easier to upload.
-1. Log into the [Custom Vision Portal](https://www.customvision.ai/)
-1. Choose the Directory associated with your Azure account
-1. Create a New Project. Be sure to choose a "compact" domain.
-1. Upload them to your custom vision project. I recommend to upload one object at a time, so it's easy to apply a tag to all your images. Each time you upload all the images for a given object, specify the tag at that time.
-1. Select "Train" to train the model
-1. Select "Quick Test" to test the model.
-. Using the camera app on your PC, take one more picture of one of the objects
-1. Upload the picture you took, verify that it was predicted correctly.
-1. Export the model. From the "Performance" tab, select the "Export" command.
-1. Choose "ONNX", then "ONNX1.2" version.
-1. After downloading, rename the file "CustomVision.onnx"
+1. This lab guide
+1. Desktop app: [Visual Studio Code](https://code.visualstudio.com)
+1. Browser tab: [Custom Vision Service](https://www.customvision.ai/)
+1. PowerShell **running as Administrator**
+
+**NOTE: You can find all username and password details in the __credentials.txt__ file in the Desktop > WindowsIoT folder.**
+
+# Step 1:  Train the Model
+## 1.1:  Gathering Training data
+1. Plug the USB camera into your lab PC
+1. Open the Windows Camera app from the Start Menu
+1. Take between 10-15 photos of each object you'd like to recognize with your model. **NOTE: More photos with different rotations and focal length should theoretically make for a better model!**
+1. Confirm your photos are in the ```Pictures > Camera Roll``` folder
+
+## 1.2:  Creating a Custom Vision Service Project
+1. Log into the [Custom Vision Service portal](https://www.customvision.ai/) using the provided Azure credentials (found in the credentials.txt file - see above)
+1. Click 'New Project'
+1. Enter the following values and click 'Create Project'
+
+|Name                 |Value                |
+|---------------------|---------------------|
+|Project Name         |[your choice]        |
+|Project Types        |Classification       |
+|Classification Types |Multiclass           |
+|Domains              |General **(compact)**|
+
+## 1.3:  Importing Images into Custom Vision Service
+1. Click the 'Add Images' button and browse to the ```Pictures > Camera Roll``` directory
+1. Select the 10-15 images of each a single type
+1. Enter a tag name - this is what your model will predict when it sees this object
+1. Repeat this until each set of images is loaded into Custom Vision
+
+## 1.4:  Train and test your model
+1. Click the green 'Train' button in the top right corner. After your model has trained, you can see the rated performance
+1. Click 'Quick Test' next to the 'Train' button and upload an extra image of your item that **was not** included in the original 10-15 images
+
+## 1.5:  Export ONNX model
+1. Return to the Performance tab
+1. Click the 'Export' to start the download process
+1. Select ONNX as the model format and ONNX 1.2 as the format version
+1. Click 'Download' and rename to CustomVision.onnx in the ```Downloads``` folder
+
 
 # Step 2: Package the model into a C# .NET Application
 
