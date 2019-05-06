@@ -100,8 +100,11 @@ IoT Core container images must be built on an IoT Core device.
 
 We will need a way to copy files to our device and a Windows PowerShell window from our development PC connected to that device.
 
-First, we will map the Q: drive to our device so we can access files. You'll need the Device IP Address which you can get from the IoT Dashboard by right clicking the name of your device and selecting "Copy IPv4 Address".
+First, we will map the Q: drive to our device so we can access files. 
 
+You'll need the Device IP Address. To get the IP Address open the IoT Dashboard and select My Devices. 
+The name of your device is written on the underside of the case in white.
+Right click on your device and select "Copy IPv4 Address".
 
 ```
 PS C:\WindowsAiEdgeLabCV> $DeviceIPAddress = "192.168.1.102"
