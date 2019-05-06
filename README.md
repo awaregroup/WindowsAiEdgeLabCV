@@ -93,9 +93,9 @@ If the model is successful, you will see a prediction label show in the console.
 
 # Step 3 - Build and push a container
 
-## Connect to our IoT Core device
+## 3.1 - Connect to IoT Core device
 
-IoT Core container images must be built on an IoT Core device. 
+In this lab, we will build and push the container from the IoT Core device. 
 
 We will need a way to copy files to our device and a Windows PowerShell window from our development PC connected to that device.
 
@@ -103,62 +103,43 @@ First, we will map the Q: drive to our device so we can access files.
 
 You'll need the Device IP Address. To get the IP Address open the "IoT Dashboard" from the desktop of your surface and select "My Devices".
  
-The name of your device is written on the underside of the case in white.
+The name of your device is written on the underside of the IoT device case in white ink.
+
 Right click on your device and select "Copy IPv4 Address".
 
-```
-PS C:\WindowsAiEdgeLabCV> $DeviceIPAddress = {ENTER YOUR IP ADDRESS HERE}
-PS C:\WindowsAiEdgeLabCV> net use q: \\$DeviceIPAddress\c$ p@ssw0rd /USER:Administrator
-The command completed successfully.
+Run the following commands in your PowerShell terminal:
+
+```powershell
+$ip = "ENTER YOUR DEVICE IP ADDRESS HERE"
+net use q: \\$ip\c$ "p@ssw0rd" /USER:Administrator
 ```
 
-Second, we'll connect a Windows PowerShell session to our target device. Open a new Windows PowerShell window, and connect to the device. When prompted enter the Device Administrator Password.
-
-```
-PS C:\WindowsAiEdgeLabCV> Enter-PSSession -ComputerName $DeviceIPAddress -Credential ~\Administrator
-```
-
-## Copy published files to target device
+## 3.2 - Copy binaries to IoT device
 
 We will copy the 'publish' folder over to our device
 
-```
-PS C:\WindowsAiEdgeLabCV> robocopy .\bin\Debug\netcoreapp2.2\win-x64\publish\ q:\data\modules\customvision
-
--------------------------------------------------------------------------------
-    ROBOCOPY     ::     Robust File Copy for Windows
--------------------------------------------------------------------------------
-
-    Started : Wednesday, April 24, 2019 4:31:37 PM
-    Source : D:\home\source\Repos\Windows-iotcore-samples\Samples\EdgeModules\SqueezeNetObjectDetection\cs\bin\Debug\netcoreapp2.2\win-x64\publish\
-        Dest : q:\data\modules\customvision\
-
-    Files : *.*
-
-    Options : *.* /DCOPY:DA /COPY:DAT /R:1000000 /W:30
-
-------------------------------------------------------------------------------
+```powershell
+cd "C:\Users\Admin\Desktop\WindowsIoT\WindowsAiEdgeCV"
+robocopy .\bin\Debug\netcoreapp2.2\win-x64\publish\ q:\data\modules\customvision
 ```
 
-## Test the sample on the target device
 
-Following the same approach as above, we will run the app on the target device to ensure we have the correct camera there, and it's working on that device.
+## 3.3 - Test the binaries on IoT device
 
-1. Connect the camera to the IoT Core device.
-1. In the Windows PowerShell window to the IoT Core device...
-1. Change to the "C:\data\modules\customvision" directory
-1. Do a test run as we did previously:
+Next we will run the binaries on the target device.
 
+1. Connect the camera to the IoT Core device
+1. Establish a remote PowerShell session on the IoT Core device by typing the following in the PowerShell terminal:
+
+**NOTE: This remote PowerShell command requires you to be running your PowerShell terminal as Administrator.**
+
+```powershell
+Enter-PSSession -ComputerName $ip -Credential ~\Administrator
+cd "C:\data\modules\customvision"
+.\WindowsAiEdgeLabCV.exe --model=CustomVision.onnx --device=LifeCam
 ```
-[192.168.1.102]: PS C:\Data\Users\Administrator\Documents> cd C:\data\modules\customvision
 
-[192.168.1.102]: PS C:\data\modules\customvision> .\WindowsAiEdgeLabCV.exe --model=CustomVision.onnx --device=LifeCam
-4/27/2019 8:31:31 AM: Loading modelfile 'CustomVision.onnx' on the CPU...
-4/27/2019 8:31:32 AM: ...OK 1516 ticks
-4/27/2019 8:31:36 AM: Running the model...
-4/27/2019 8:31:38 AM: ...OK 1953 ticks
-4/27/2019 8:31:42 AM: Recognized {"results":[{"label":"Mug","confidence":1.0}],"metrics":{"evaltimeinms":1953,"cycletimeinms":0}}
-```
+Again, if the test is successful, you should see objects recognized in the console.
 
 ## Containerize the sample app
 
