@@ -175,7 +175,7 @@ docker push $container
 
 Refer to this guide for more information: [Deploy Azure IoT Edge modules from Visual Studio Code](https://docs.microsoft.com/en-us/azure/iot-edge/how-to-deploy-modules-vscode)
 
-1. In Visual Studio Code, open the 'Azure IoT Hub Devices' pane 
+1. In Visual Studio Code, open the 'Azure IoT Hub Devices' pane by selecting the Explorer sidebar in the top left corner (Ctrl + Shift + E) and then clicking on the 'Azure IoT Hub Devices' at the bottom of the sidebar when it opens
 1. If you see '-> Select IoT Hub', you will need to log in with your Azure Subscription, select the 'MS IoT Labs - Windows IoT' subscription and the IoT Hub
 1. Right-click on your device (for example, 'A09') and click 'Create Deployment for Single Device'
 1. Select ```C:\Users\Admin\Desktop\WindowsIoT\deployment.json```
@@ -184,7 +184,7 @@ Refer to this guide for more information: [Deploy Azure IoT Edge modules from Vi
 
 ## 4.2 - Verify the deployment on IoT device
 
-The module deployment is instant, however changes to the device can take around 5-7 minutes to take effect. On the target device you can inspect the running modules with the following command in the PowerShell terminal:
+The module deployment is instant, however changes to the device can take around 5-7 minutes to take effect. On the **target device** you can inspect the running modules with the following command in the remote PowerShell terminal:
 
 ```powershell
 iotedge list
