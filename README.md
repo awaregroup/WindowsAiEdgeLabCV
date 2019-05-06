@@ -102,7 +102,8 @@ We will need a way to copy files to our device and a Windows PowerShell window f
 
 First, we will map the Q: drive to our device so we can access files. 
 
-You'll need the Device IP Address. To get the IP Address open the IoT Dashboard and select My Devices. 
+You'll need the Device IP Address. To get the IP Address open the "IoT Dashboard" from the desktop of your surface and select "My Devices".
+ 
 The name of your device is written on the underside of the case in white.
 Right click on your device and select "Copy IPv4 Address".
 
