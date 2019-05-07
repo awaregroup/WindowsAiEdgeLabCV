@@ -129,7 +129,7 @@ robocopy .\bin\Debug\netcoreapp2.2\win-x64\publish\ q:\data\modules\customvision
 Next we will run the binaries on the target device.
 
 1. Connect the camera to the IoT Core device
-1. Establish a remote PowerShell session on the IoT Core device by opening the IoT Core Dashboard, right clicking on your device and clicking on 'Launch PowerShell'
+1. Establish a remote PowerShell session on the IoT Core device by opening ``` Start Menu > IoT Dashboard```, right clicking on your device and clicking on 'Launch PowerShell'
 
 ![remote powershell](./assets/iotdashboard1.png)
 
