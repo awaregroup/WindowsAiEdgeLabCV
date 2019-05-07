@@ -166,7 +166,6 @@ docker build . -t $container
 
 ```powershell
 docker login "ENTER YOUR CONTAINER REGISTRY NAME/URL" -u "ENTER YOUR CONTAINER REGISTRY USERNAME" -p "ENTER YOUR CONTAINER REGISTRY PASSWORD"
-
 docker push $container
 ```
 
