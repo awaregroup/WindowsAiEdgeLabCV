@@ -222,3 +222,4 @@ ProcessLauncherSample/
 
 nuget.exe
 Scripts/logs
+.vscode/launch.json
