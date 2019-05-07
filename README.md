@@ -129,17 +129,18 @@ robocopy .\bin\Debug\netcoreapp2.2\win-x64\publish\ q:\data\modules\customvision
 Next we will run the binaries on the target device.
 
 1. Connect the camera to the IoT Core device
-1. Establish a remote PowerShell session on the IoT Core device by typing the following in the PowerShell terminal:
+1. Establish a remote PowerShell session on the IoT Core device by opening the IoT Core Dashboard, right clicking on your device and clicking on 'Launch PowerShell'
 
-**NOTE: This remote PowerShell command requires you to be running your PowerShell terminal as Administrator.**
+![remote powershell](./assets/iotdashboard1.png)
+
+To test the binaries, run the following commands in the remote PowerShell session:
 
 ```powershell
-Enter-PSSession -ComputerName $ip -Credential ~\Administrator
 cd "C:\data\modules\customvision"
 .\WindowsAiEdgeLabCV.exe --model=CustomVision.onnx --device=LifeCam
 ```
 
-Again, if the test is successful, you should see objects recognized in the console.
+If the test is successful, you should see objects recognized in the console.
 
 ## 3.4 - Switch docker to IoT Edge
 
