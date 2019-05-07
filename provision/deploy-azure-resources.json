@@ -1,0 +1,233 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "labUserNumberObjectId" : {
+            "type": "string",
+            "metadata": {
+              "description": "The object id or UPN of the lab user."
+            }
+        },
+        "primaryRegion" : {
+            "type": "string",
+            "metadata": {
+              "description": "The primary region to use."
+            }
+        }
+    },
+    "variables": {
+        
+        "IotHubs_winiotailab_iot_name":  "[toLower( concat( 'winiotailab-', uniqueString(resourceGroup().id) ) )]",
+        "accounts_winiotailab_iot_name":  "[toLower( concat( 'winiotailab-', uniqueString(resourceGroup().id) ) )]",
+        "registries_winiotailabiot_name":  "[toLower( concat( 'winiotailab', uniqueString(resourceGroup().id) ) )]",
+        "provisioningServices_winiotailab_iot_name": "[toLower( concat( 'winiotailab-', uniqueString(resourceGroup().id)) )]",
+        "environments_winiotailab_iot_name":  "[toLower( concat( 'winiotailab-', uniqueString(resourceGroup().id) ) )]",
+        "accounts_winiotailabiot_Prediction_name": "[toLower( concat( 'winiotailab-', uniqueString(resourceGroup().id), '-prediction')) ]"
+    },
+    "resources": [
+        {
+            "type": "Microsoft.CognitiveServices/accounts",
+            "apiVersion": "2016-02-01-preview",
+            "name": "[variables('accounts_winiotailab_iot_name')]",
+            "location": "westus2",
+            "sku": {
+                "name": "S0"
+            },
+            "kind": "CustomVision.Training",
+            "properties": {}
+        },
+        {
+            "type": "Microsoft.CognitiveServices/accounts",
+            "apiVersion": "2016-02-01-preview",
+            "name": "[variables('accounts_winiotailabiot_Prediction_name')]",
+            "location": "westus2",
+            "sku": {
+                "name": "S0"
+            },
+            "kind": "CustomVision.Prediction",
+            "properties": {}
+        },
+        {
+            "type": "Microsoft.ContainerRegistry/registries",
+            "apiVersion": "2017-10-01",
+            "name": "[variables('registries_winiotailabiot_name')]",
+            "location": "[parameters('primaryRegion')]",
+            "sku": {
+                "name": "Basic",
+                "tier": "Basic"
+            },
+            "properties": {
+                "adminUserEnabled": true
+            }
+        },
+        {
+            "type": "Microsoft.Devices/IotHubs",
+            "apiVersion": "2018-04-01",
+            "name": "[variables('IotHubs_winiotailab_iot_name')]",
+            "location": "[parameters('primaryRegion')]",
+            "sku": {
+                "name": "S1",
+                "tier": "Free",
+                "capacity": 1
+            },
+            "properties": {
+                "operationsMonitoringProperties": {
+                    "events": {
+                        "None": "None",
+                        "Connections": "None",
+                        "DeviceTelemetry": "None",
+                        "C2DCommands": "None",
+                        "DeviceIdentityOperations": "None",
+                        "FileUploadOperations": "None",
+                        "Routes": "None"
+                    }
+                },
+                "ipFilterRules": [],
+                "eventHubEndpoints": {
+                    "events": {
+                        "retentionTimeInDays": 1,
+                        "partitionCount": 2,
+                        "partitionIds": [
+                            "0",
+                            "1"
+                        ],
+                        "path": "[concat('iothub-ehub-', variables('IotHubs_winiotailab_iot_name'), '-1575158-16fad2311d')]",
+                        "endpoint": "sb://ihsuprodsyres020dednamespace.servicebus.windows.net/"
+                    },
+                    "operationsMonitoringEvents": {
+                        "retentionTimeInDays": 1,
+                        "partitionCount": 2,
+                        "partitionIds": [
+                            "0",
+                            "1"
+                        ],
+                        "path": "[concat('iothub-ehub-', variables('IotHubs_winiotailab_iot_name'), '-1575158-eaef016f00')]",
+                        "endpoint": "sb://ihsuprodsyres018dednamespace.servicebus.windows.net/"
+                    }
+                },
+                "routing": {
+                    "endpoints": {
+                        "serviceBusQueues": [],
+                        "serviceBusTopics": [],
+                        "eventHubs": [],
+                        "storageContainers": []
+                    },
+                    "routes": [],
+                    "fallbackRoute": {
+                        "name": "$fallback",
+                        "source": "DeviceMessages",
+                        "condition": "true",
+                        "endpointNames": [
+                            "events"
+                        ],
+                        "isEnabled": true
+                    }
+                },
+                "storageEndpoints": {
+                    "$default": {
+                        "sasTtlAsIso8601": "PT1H",
+                        "connectionString": "",
+                        "containerName": ""
+                    }
+                },
+                "messagingEndpoints": {
+                    "fileNotifications": {
+                        "lockDurationAsIso8601": "PT1M",
+                        "ttlAsIso8601": "PT1H",
+                        "maxDeliveryCount": 10
+                    }
+                },
+                "enableFileUploadNotifications": false,
+                "cloudToDevice": {
+                    "maxDeliveryCount": 10,
+                    "defaultTtlAsIso8601": "PT1H",
+                    "feedback": {
+                        "lockDurationAsIso8601": "PT1M",
+                        "ttlAsIso8601": "PT1H",
+                        "maxDeliveryCount": 10
+                    }
+                },
+                "features": "None"
+            }
+        },
+        {
+            "type": "Microsoft.Devices/provisioningServices",
+            "apiVersion": "2017-11-15",
+            "name": "[variables('provisioningServices_winiotailab_iot_name')]",
+            "location": "westus",
+            "sku": {
+                "name": "S1",
+                "tier": "Standard",
+                "capacity": 1
+            },
+            "properties": {
+                "iotHubs": [
+                    {
+                        "name": "[concat(variables('provisioningServices_winiotailab_iot_name'), '.azure-devices.net')]",
+                        "connectionstring": "[concat('HostName=', reference(resourceId('Microsoft.Devices/IoTHubs', variables('IotHubs_winiotailab_iot_name')), providers('Microsoft.Devices', 'IoTHubs').apiVersions[0]).hostName, ';SharedAccessKeyName=iothubowner;SharedAccessKey=', listKeys(resourceId('Microsoft.Devices/IotHubs', variables('IotHubs_winiotailab_iot_name')), providers('Microsoft.Devices', 'IoTHubs').apiVersions[0]).value[0].primaryKey)]",
+                        "location": "[parameters('primaryRegion')]"
+                    }
+                ]
+            }
+        },
+        {
+            "type": "Microsoft.TimeSeriesInsights/environments",
+            "apiVersion": "2017-11-15",
+            "name": "[variables('environments_winiotailab_iot_name')]",
+            "location": "[parameters('primaryRegion')]",
+            "sku": {
+                "name": "S1",
+                "capacity": 1
+            },
+            "kind": "Standard",
+            "properties": {
+                "dataRetentionTime": "P30D",
+                "storageLimitExceededBehavior": "PurgeOldData"
+            }
+        },
+        {
+            "type": "Microsoft.TimeSeriesInsights/environments/accesspolicies",
+            "apiVersion": "2017-11-15",
+            "name": "[concat(variables('environments_winiotailab_iot_name'), '/ownerAccessPolicy')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.TimeSeriesInsights/environments', variables('environments_winiotailab_iot_name'))]"
+            ],
+            "properties": {
+                "principalObjectId": "[parameters('labUserNumberObjectId')]",
+                "roles": [
+                    "Reader",
+                    "Contributor"
+                ]
+            }
+        },
+        {
+            "type": "Microsoft.TimeSeriesInsights/environments/eventSources",
+            "apiVersion": "2017-11-15",
+            "name": "[concat(variables('environments_winiotailab_iot_name'), '/', variables('environments_winiotailab_iot_name'))]",
+            "location": "[parameters('primaryRegion')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.TimeSeriesInsights/environments', variables('environments_winiotailab_iot_name'))]",
+                "[resourceId('Microsoft.Devices/IotHubs', variables('IotHubs_winiotailab_iot_name'))]"
+            ],
+            "kind": "Microsoft.IoTHub",
+            "properties": {
+                "eventSourceResourceId": "[resourceId('Microsoft.Devices/IotHubs', variables('IotHubs_winiotailab_iot_name'))]",
+                "iotHubName": "[variables('IotHubs_winiotailab_iot_name')]",
+                "keyName": "iothubowner",
+                "consumerGroupName": "timeseriesinsights",
+                "sharedAccessKey": "[listKeys(resourceId('Microsoft.Devices/IotHubs', variables('IotHubs_winiotailab_iot_name')), providers('Microsoft.Devices', 'IoTHubs').apiVersions[0]).value[0].primaryKey]"
+            }
+        }
+    ],
+    "outputs": { 
+        "iotHubName": {
+            "type" : "string",
+            "value":  "[variables('environments_winiotailab_iot_name')]"
+        },
+        "sharedAccessKey" :
+        {
+            "type" : "string",
+            "value": "[listKeys(resourceId('Microsoft.Devices/IotHubs', variables('IotHubs_winiotailab_iot_name')), providers('Microsoft.Devices', 'IoTHubs').apiVersions[0]).value[0].primaryKey]"
+          } 
+        }
+}
